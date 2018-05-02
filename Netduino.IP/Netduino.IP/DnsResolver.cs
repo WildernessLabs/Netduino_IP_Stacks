@@ -53,7 +53,7 @@ namespace Netduino.IP
 
         const UInt16 DNS_RECORD_CLASS_INTERNET = 1;
 
-        struct DnsResourceRecord
+        class DnsResourceRecord
         {
             public string Name;
             public DnsRecordType RecordType;
@@ -67,6 +67,8 @@ namespace Netduino.IP
                 this.TimeToLive = timeToLive;
                 this.Data = data;
             }
+
+            public DnsResourceRecord() { }
         }
 
         class DnsResponse
@@ -87,6 +89,8 @@ namespace Netduino.IP
                 this.AuthorityRecords = authorityRecords;
                 this.AdditionalInformationRecords = additionalInformationRecords;
             }
+
+            public DnsResponse() { }
         }
 
         enum DnsResponseCode : byte

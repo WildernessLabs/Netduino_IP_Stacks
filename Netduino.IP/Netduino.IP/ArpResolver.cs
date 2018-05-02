@@ -59,7 +59,7 @@ namespace Netduino.IP
         System.Collections.Hashtable _arpCache;
         object _arpCacheLock = new object();
 
-        struct ArpGenericData
+        class ArpGenericData
         {
             public ArpGenericData(UInt64 destinationEthernetAddress, ArpOperation arpOperation, UInt64 targetPhysicalAddress, UInt32 targetProtocolAddress)
             {

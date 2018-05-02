@@ -74,7 +74,7 @@ namespace Netduino.IP
             FIN,
             Data
         }
-        struct TransmissionDetails
+        class TransmissionDetails
         {
             public TransmissionType TransmissionType;
             public Int32 TransmissionAttemptsCounter;

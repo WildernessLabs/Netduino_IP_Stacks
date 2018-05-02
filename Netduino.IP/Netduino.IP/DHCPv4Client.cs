@@ -37,7 +37,7 @@ namespace Netduino.IP
         public delegate void DnsConfigChangedEventHandler(object sender, UInt32[] dnsAddresses);
         internal event DnsConfigChangedEventHandler DnsConfigChanged;
 
-        struct DhcpOption
+        class DhcpOption
         {
             public DhcpOptionCode Code;
             public byte[] Value;
@@ -49,7 +49,7 @@ namespace Netduino.IP
             }
         }
 
-        struct DhcpOptionsBlockRange
+        class DhcpOptionsBlockRange
         {
             public Int32 BeginOffset;
             public Int32 EndOffset;
@@ -162,7 +162,7 @@ namespace Netduino.IP
         AutoResetEvent _dhcpStateMachineEvent = new AutoResetEvent(false);
         DhcpStateMachineState _dhcpStateMachineState = DhcpStateMachineState.InitReboot;
 
-        struct DhcpOffer
+        class DhcpOffer
         {
             public UInt32 IPAddress;
             public UInt32 SubnetMask;
@@ -195,6 +195,10 @@ namespace Netduino.IP
                 this.LeaseExpirationTimeInSeconds = UInt32.MaxValue;
                 this.LeaseRenewalTimeInSeconds = UInt32.MaxValue;
                 this.LeaseRebindingTimeInSeconds = UInt32.MaxValue;
+            }
+
+            public DhcpOffer()
+            {
             }
         }
 

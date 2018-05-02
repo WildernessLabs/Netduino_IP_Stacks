@@ -29,7 +29,7 @@ namespace Netduino.IP
         protected int[] _indexArray = new int[2];
         protected int[] _countArray = new int[2];
 
-        internal struct TcpOption
+        internal class TcpOption
         {
             public byte Kind;
             public byte[] Data;

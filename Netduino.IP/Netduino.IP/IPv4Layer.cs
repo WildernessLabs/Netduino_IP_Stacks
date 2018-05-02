@@ -53,7 +53,7 @@ namespace Netduino.IP
         System.Threading.Thread _loopbackThread;
         AutoResetEvent _loopbackBufferFilledEvent = new AutoResetEvent(false);
 
-        internal struct ReceivedPacketBufferHoles
+        internal class ReceivedPacketBufferHoles
         {
             public Int32 FirstIndex;
             public Int32 LastIndex; /* set to Int32.MaxValue to indicate an unknown end of missing fragmetn */
@@ -442,7 +442,13 @@ namespace Netduino.IP
             if (buffer.Buffer == null)
                 buffer.Buffer = new byte[1500]; /* TODO: determine correct maximum size and make this a const */
             if ((buffer.Holes == null) || (buffer.Holes.Length != DEFAULT_NUM_BUFFER_HOLES_ENTRIES_PER_BUFFER))
+            {
                 buffer.Holes = new ReceivedPacketBufferHoles[DEFAULT_NUM_BUFFER_HOLES_ENTRIES_PER_BUFFER];
+                for (int index = 0; index < buffer.Holes.Length; index++)
+                {
+                    buffer.Holes[index] = new ReceivedPacketBufferHoles();
+                }
+            }
             buffer.Holes[0].FirstIndex = 0;
             buffer.Holes[0].LastIndex = Int32.MaxValue;
             for (int i = 1; i < buffer.Holes.Length; i++)
