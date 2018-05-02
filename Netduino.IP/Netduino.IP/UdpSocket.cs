@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Threading;
 
 namespace Netduino.IP
@@ -32,12 +33,87 @@ namespace Netduino.IP
         {
             public UInt32 SourceIPAddress;
             public UInt16 SourceIPPort;
-            public byte[] Buffer = new byte[1500];
+            public byte[] Buffer;
             public Int32 BufferBytesFilled;
             public bool IsEmpty;
-            public object LockObject;
+            //public object LockObject;
         }
-        ReceivedPacketBuffer _receivedPacketBuffer = new ReceivedPacketBuffer();
+//        ReceivedPacketBuffer _receivedPacketBuffer = new ReceivedPacketBuffer();
+        internal class Datagrams
+        {
+            private const int MAX_DATAGRAMS = 8;
+            public object LockObject;
+            private readonly ArrayList _datagrams;
+
+            private UInt16 _preferredBuffersize = 1500;
+            public UInt16 PreferredBufferSize
+            {
+                get { return (_preferredBuffersize); }
+                set
+                {
+                    if (value < UDP_HEADER_LENGTH)
+                    {
+                        throw new ArgumentOutOfRangeException("PreferredBufferSize");
+                    }
+
+                    _preferredBuffersize = value;
+                }
+            }
+
+            public int Count
+            {
+                get { return (_datagrams.Count); }
+            }
+
+            public bool CanAcceptDatagram
+            {
+                get { return (_datagrams.Count < MAX_DATAGRAMS); }
+            }
+
+            public bool IsEmpty
+            {
+                get { return (_datagrams.Count == 0); }
+            }
+
+            public void Add(ReceivedPacketBuffer packet)
+            {
+                if (_datagrams.Count == MAX_DATAGRAMS)
+                {
+                    throw new InvalidOperationException("UDP datagram queue is full");
+                }
+                _datagrams.Add(packet);
+            }
+
+            public ReceivedPacketBuffer Get()
+            {
+                if (IsEmpty)
+                {
+                    throw new InvalidOperationException("UDP datagram queue is empty.");
+                }
+                ReceivedPacketBuffer packet = (ReceivedPacketBuffer)_datagrams[0];
+                _datagrams.RemoveAt(0);
+                return (packet);
+            }
+
+            public ReceivedPacketBuffer Peek()
+            {
+                if (IsEmpty)
+
+                {
+                    throw new InvalidOperationException("UDP datagram queue is empty.");
+                }
+                return((ReceivedPacketBuffer)_datagrams[0]);
+            }
+
+            public Datagrams()
+            {
+                _datagrams = new ArrayList();
+                PreferredBufferSize = 1500;
+                LockObject = new object();
+            }
+        }
+
+        private Datagrams _datagrams;
         AutoResetEvent _receivedPacketBufferFilledEvent = new AutoResetEvent(false);
         const Int32 RECEIVE_BUFFER_MIN_SIZE = 536; /* 536 bytes is the minimum receive buffer size allowed by UDP spec */
 
@@ -48,8 +124,8 @@ namespace Netduino.IP
             _ipv4Layer = ipv4Layer;
 
             base._protocolType = IPv4Layer.ProtocolType.Udp;
-
-            InitializeReceivedPacketBuffer(_receivedPacketBuffer);
+            _datagrams = new Datagrams();
+            //InitializeReceivedPacketBuffer(_receivedPacketBuffer);
         }
 
         public override void Dispose()
@@ -80,7 +156,7 @@ namespace Netduino.IP
 
             _sourceIpAddressAndPortAssigned = true;
 
-            // if ipAddress is IP_ADDRESS_ANY, then change it to to our actual ipAddress.
+            // if ipAddress is IP_ADDRESS_ANY, then change it to our actual ipAddress.
             if (ipAddress == IP_ADDRESS_ANY)
                 ipAddress = _ipv4Layer.IPAddress;
 
@@ -133,7 +209,7 @@ namespace Netduino.IP
                         /* TODO: check if listen has been called and a connection is pending */
                         //return true;
 
-                        if (_receivedPacketBuffer.BufferBytesFilled > 0)
+                        if (_datagrams.Count > 0)
                             return true;
 
                         /* TODO: check if connection has been closed, reset, or terminated */
@@ -182,7 +258,7 @@ namespace Netduino.IP
         {
             // make sure that a default destination IPEndpoint has been configured.
             if ((_destIPAddress == IP_ADDRESS_ANY) || (_destIPPort == IP_PORT_ANY))
-                throw Utility.NewSocketException(SocketError.NotConnected); /* "must specify destination ipaddr/port" */
+                throw Utility.NewSocketException(SocketError.NotConnected); /* "must specify destination IP address and port" */
 
             // send to the default destination ipAddress/ipPort (as specified when Connect was called)
             return SendTo(buffer, offset, count, flags, timeoutInMachineTicks, _destIPAddress, _destIPPort);
@@ -204,7 +280,7 @@ namespace Netduino.IP
                 UInt16 udpLength = (UInt16)(UDP_HEADER_LENGTH + count);
                 _udpHeaderBuffer[4] = (byte)((udpLength >> 8) & 0xFF);
                 _udpHeaderBuffer[5] = (byte)(udpLength & 0xFF);
-                _udpHeaderBuffer[6] = 0; // for now, no checksum; we'll populate this when we calculate checksum over the pseudoheader + header + data + 16-bit-alignment-if-necessary-zero-pad-byte
+                _udpHeaderBuffer[6] = 0; // for now, no checksum; we'll populate this when we calculate checksum over the pseudo-header + header + data + 16-bit-alignment-if-necessary-zero-pad-byte
                 _udpHeaderBuffer[7] = 0; // checksum (continued)
 
                 UInt16 checksum;
@@ -237,7 +313,7 @@ namespace Netduino.IP
                     checksum = Utility.CalculateInternetChecksum(_checksumBufferArray, _checksumOffsetArray, _checksumCountArray); /* NOTE: this function will append a pad byte if necessary for 16-bit alignment before calculation */
                 }
 
-                // insert checksujm into UDP header
+                // insert checksum into UDP header
                 _udpHeaderBuffer[6] = (byte)((checksum >> 8) & 0xFF);
                 _udpHeaderBuffer[7] = (byte)(checksum & 0xFF);
 
@@ -266,7 +342,7 @@ namespace Netduino.IP
 
         public override Int32 ReceiveFrom(byte[] buf, Int32 offset, Int32 count, Int32 flags, Int64 timeoutInMachineTicks, out UInt32 ipAddress, out UInt16 ipPort)
         {
-            if (_receivedPacketBuffer.IsEmpty)
+            if (_datagrams.IsEmpty)
             {
                 Int32 waitTimeout = (Int32)((timeoutInMachineTicks != Int64.MaxValue) ? System.Math.Max((timeoutInMachineTicks - Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks) / System.TimeSpan.TicksPerMillisecond, 0) : System.Threading.Timeout.Infinite);
                 if (!_receivedPacketBufferFilledEvent.WaitOne(waitTimeout, false))
@@ -279,15 +355,17 @@ namespace Netduino.IP
             }
 
             int bytesRead;
-            lock (_receivedPacketBuffer.LockObject)
+            lock (_datagrams.LockObject)
             {
-                bytesRead = Math.Min(count, _receivedPacketBuffer.BufferBytesFilled);
-                Array.Copy(_receivedPacketBuffer.Buffer, 0, buf, offset, bytesRead);
-                ipAddress = _receivedPacketBuffer.SourceIPAddress;
-                ipPort = _receivedPacketBuffer.SourceIPPort;
+                ReceivedPacketBuffer packet = _datagrams.Get();
+
+                bytesRead = Math.Min(count, packet.BufferBytesFilled);
+                Array.Copy(packet.Buffer, 0, buf, offset, bytesRead);
+                ipAddress = packet.SourceIPAddress;
+                ipPort = packet.SourceIPPort;
 
                 // now empty our datagram buffer
-                InitializeReceivedPacketBuffer(_receivedPacketBuffer);
+//                InitializeReceivedPacketBuffer(_receivedPacketBuffer);
             }
 
             return bytesRead;
@@ -295,13 +373,13 @@ namespace Netduino.IP
 
         internal override void OnPacketReceived(UInt32 sourceIPAddress, UInt32 destinationIPAddress, byte[] buffer, Int32 index, Int32 count)
         {
-            lock (_receivedPacketBuffer.LockObject)
+            lock (_datagrams.LockObject)
             {
                 if (count < UDP_HEADER_LENGTH)
                     return;
 
                 /* if we do not have enough room for the incoming frame, discard it */
-                if (_receivedPacketBuffer.IsEmpty == false)
+                if (!_datagrams.CanAcceptDatagram)
                     return;
 
                 UInt16 packetHeaderChecksum = (UInt16)((((UInt16)buffer[index + 6]) << 8) + buffer[index + 7]);
@@ -341,49 +419,65 @@ namespace Netduino.IP
                 }
 
                 UInt16 sourceIPPort = (UInt16)((((UInt16)buffer[index + 0]) << 8) + buffer[index + 1]);
+                ReceivedPacketBuffer packetBuffer = new ReceivedPacketBuffer();
+                packetBuffer.Buffer = new byte[_datagrams.PreferredBufferSize];
+                //
+                //  The code below throws away some data if the amount of data to copy is greater than
+                //  the preferred buffer size.
+                //
+                //  TODO: Should be change this behaviour to throw an exception?
+                //
+                int amountToCopy = Math.Min(_datagrams.PreferredBufferSize, count - UDP_HEADER_LENGTH);
+                Array.Copy(buffer, index + UDP_HEADER_LENGTH, packetBuffer.Buffer, 0, amountToCopy);
+                packetBuffer.BufferBytesFilled = amountToCopy;
 
-                Array.Copy(buffer, index + UDP_HEADER_LENGTH, _receivedPacketBuffer.Buffer, 0, count - UDP_HEADER_LENGTH);
-                _receivedPacketBuffer.BufferBytesFilled = count - UDP_HEADER_LENGTH;
+                packetBuffer.SourceIPAddress = sourceIPAddress;
+                packetBuffer.SourceIPPort = sourceIPPort;
 
-                _receivedPacketBuffer.SourceIPAddress = sourceIPAddress;
-                _receivedPacketBuffer.SourceIPPort = sourceIPPort;
-
-                _receivedPacketBuffer.IsEmpty = false;
+                packetBuffer.IsEmpty = false;
+                _datagrams.Add(packetBuffer);
                 _receivedPacketBufferFilledEvent.Set();
             }
         }
 
-        internal void InitializeReceivedPacketBuffer(ReceivedPacketBuffer buffer)
-        {
-            buffer.SourceIPAddress = 0;
-            buffer.SourceIPPort = 0;
+        //internal void InitializeReceivedPacketBuffer(ReceivedPacketBuffer buffer)
+        //{
+        //    buffer.SourceIPAddress = 0;
+        //    buffer.SourceIPPort = 0;
+            
+        //    if (buffer.Buffer == null)
+        //        buffer.Buffer = new byte[_datagrams.PreferredBufferSize];
+        //    buffer.BufferBytesFilled = 0;
 
-            if (buffer.Buffer == null)
-                buffer.Buffer = new byte[1500]; /* TODO: determine correct maximum size and make this a const */
-            buffer.BufferBytesFilled = 0;
+        //    buffer.IsEmpty = true;
+        //    if (buffer.LockObject == null)
+        //        buffer.LockObject = new object();
+        //}
 
-            buffer.IsEmpty = true;
-            if (buffer.LockObject == null)
-                buffer.LockObject = new object();
-        }
-
+        /// <summary>
+        ///     Get or set the size of the buffers for new UDP packets.
+        /// </summary>
         internal override UInt16 ReceiveBufferSize
         {
             get
             {
-                lock (_receivedPacketBuffer.LockObject)
+                lock (_datagrams.LockObject)
                 {
-                    return (UInt16)_receivedPacketBuffer.BufferBytesFilled;
+                    return _datagrams.PreferredBufferSize;
                 }
             }
             set
             {
-                value = (UInt16)System.Math.Max(value, RECEIVE_BUFFER_MIN_SIZE);
+                value = (UInt16) Math.Max(value, RECEIVE_BUFFER_MIN_SIZE);
 
-                lock (_receivedPacketBuffer.LockObject)
+                lock (_datagrams.LockObject)
                 {
-                    // create new receive buffer
-                    byte[] newReceiveBuffer = new byte[value];
+                    _datagrams.PreferredBufferSize = value;
+                    //
+                    //  TODO: Loop through all of the datagrams received so far and resize the buffers?
+                    //
+                    //  This was the behaviour of the SL code (see below).
+                    //
 
                     // if our new receive buffer is smaller than our old receive buffer, we will truncate any remaining data
                     /* NOTE: an alternate potential behavior would be to block new data reception until enough data gets retrieved by the caller that we can shrink the buffer...
@@ -392,23 +486,26 @@ namespace Netduino.IP
                      *       or to temporarily choose the larger of the requested size and the currently-used size...and then reduce the buffer size ASAP */
 
                     // copy existing receive buffer to new receive buffer
-                    Int32 bytesToCopy = System.Math.Min(_receivedPacketBuffer.BufferBytesFilled, newReceiveBuffer.Length);
-                    Array.Copy(_receivedPacketBuffer.Buffer, newReceiveBuffer, bytesToCopy);
+                    //Int32 bytesToCopy = System.Math.Min(_receivedPacketBuffer.BufferBytesFilled, newReceiveBuffer.Length);
+                    //Array.Copy(_receivedPacketBuffer.Buffer, newReceiveBuffer, bytesToCopy);
 
-                    _receivedPacketBuffer.Buffer = newReceiveBuffer;
-                    _receivedPacketBuffer.BufferBytesFilled = bytesToCopy;
+                    //_receivedPacketBuffer.Buffer = newReceiveBuffer;
+                    //_receivedPacketBuffer.BufferBytesFilled = bytesToCopy;
                 }
             }
         }
 
+        /// <summary>
+        ///     Get the number of bytes in the first datagram in the queue.
+        /// </summary>
+        /// <returns>Number of bytes in the first datagram ready to be read or 0 if the queue is empty.</returns>
         public override Int32 GetBytesToRead()
         {
-            lock (_receivedPacketBuffer.LockObject)
+            lock (_datagrams.LockObject)
             {
-                if (_receivedPacketBuffer.IsEmpty)
-                    return 0;
+                int result = _datagrams.IsEmpty ? 0 : ((ReceivedPacketBuffer) _datagrams.Peek()).BufferBytesFilled;
 
-                return _receivedPacketBuffer.BufferBytesFilled;
+                return (result);
             }
         }
     }
