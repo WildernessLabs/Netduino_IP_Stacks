@@ -16,7 +16,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;NETDUINOIP_CC3100,CC3100,TRACE,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -32,9 +32,16 @@
     <Compile Include="Application.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ILinkLayer.cs" />
+    <Compile Include="RoslynHackFix.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Netduino.IP.Interop\Netduino.IP.Interop.csproj">
+      <Project>{85567436-590D-4EE4-8FC3-F058E2E3CCD6}</Project>
+      <Name>Netduino.IP.Interop</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
