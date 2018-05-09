@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <FeatureName>Netduino.IP.Interop</FeatureName>
-    <Guid>{ee0f2c43-dfa3-431b-9c2e-d7f617de3887}</Guid>
+    <Guid>{068a7091-8676-437f-873d-de6cb8e3ef11}</Guid>
     <Description>&lt;Add Feature Description Here&gt;</Description>
     <Groups />
     <NETDUINO_IP_INTEROP_FEATUREPROJ>True</NETDUINO_IP_INTEROP_FEATUREPROJ>
@@ -11,6 +11,6 @@
     <DriverLibs Include="Netduino_IP_Interop.$(LIB_EXT)" />
     <InteropFeature Include="Netduino_IP_Interop" />
     <MMP_DAT_CreateDatabase Include="$(BUILD_TREE_CLIENT)\pe\$(ENDIANNESS)\Netduino.IP.Interop.pe" />
-    <RequiredProjects Include="C:\NetduinoDev\Netduino_IP_Stacks\Netduino.IP\Netduino.IP.Interop\Stubs\dotnetmf.proj" />
+    <RequiredProjects Include="C:\NetduinoDev\Netduino_IP_Stacks\Netduino.IP_CC3100\Netduino.IP.Interop\Stubs\dotnetmf.proj" />
   </ItemGroup>
 </Project>

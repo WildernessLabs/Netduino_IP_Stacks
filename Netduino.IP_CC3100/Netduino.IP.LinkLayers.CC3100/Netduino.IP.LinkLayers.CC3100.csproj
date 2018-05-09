@@ -44,23 +44,19 @@
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.Native" />
-    <Reference Include="Netduino.IP.Interop, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Netduino.IP.Interop\bin\Release\Netduino.IP.Interop.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\TMP\CC3100Stack\System.Net.Security\System.Net.Security.csproj">
-      <Project>{64BB0AF1-507B-4DAE-9AA8-D72A27B9EBE5}</Project>
-      <Name>System.Net.Security</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\..\TMP\CC3100Stack\System\System.csproj">
-      <Project>{B9C95976-997C-4933-BC3A-8711CA452987}</Project>
-      <Name>System</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Netduino.IP\Netduino.IP.csproj">
+    <ProjectReference Include="..\..\Netduino.IP\Netduino.IP\Netduino.IP.csproj">
       <Project>{85B41EDD-37EC-42EB-8187-C01866C18ACC}</Project>
       <Name>Netduino.IP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Netduino.IP.Interop\Netduino.IP.Interop.csproj">
+      <Project>{85567436-590D-4EE4-8FC3-F058E2E3CCD6}</Project>
+      <Name>Netduino.IP.Interop</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System\System.csproj">
+      <Project>{B9C95976-997C-4933-BC3A-8711CA452987}</Project>
+      <Name>System</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
