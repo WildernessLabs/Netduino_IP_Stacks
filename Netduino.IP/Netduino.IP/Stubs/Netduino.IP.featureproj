@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FeatureName>Netduino.IP</FeatureName>
+    <Guid>{6fe35935-c5bc-4ad3-a52b-2cdd8c1b7117}</Guid>
+    <Description>&lt;Add Feature Description Here&gt;</Description>
+    <Groups />
+    <NETDUINO_IP_FEATUREPROJ>True</NETDUINO_IP_FEATUREPROJ>
+  </PropertyGroup>
+  <ItemGroup>
+    <DriverLibs Include="Netduino_IP.$(LIB_EXT)" />
+    <InteropFeature Include="Netduino_IP" />
+    <MMP_DAT_CreateDatabase Include="$(BUILD_TREE_CLIENT)\pe\$(ENDIANNESS)\Netduino.IP.pe" />
+    <RequiredProjects Include="C:\NetduinoDev\Netduino_IP_Stacks\Netduino.IP\Netduino.IP\Stubs\dotnetmf.proj" />
+  </ItemGroup>
+</Project>
