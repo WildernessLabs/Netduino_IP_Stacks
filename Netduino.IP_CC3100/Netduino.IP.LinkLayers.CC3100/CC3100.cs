@@ -141,96 +141,94 @@ namespace Netduino.IP.LinkLayers
 
         bool _isFirstCommandSent = false;
 
-        /// <summary>
-        ///     Op codes for the CC3100 WiFi chip.
-        /// </summary>
+        // CC3100 opcodes
         enum CC3100Opcode : ushort
         {
-            None                                   = 0x0000,    //     0
-            Device_InitComplete                    = 0x0008,    //     8
+            None                       = 0x0000,
+            Device_InitComplete = 0x0008,
             //Device_Abort_Command       = 0x000C,
-            Device_Stop_Command                    = 0x8473,    // 33907
-            Device_Stop_Response                   = 0x0473,    //  1139
-            Device_Stop_Async_Response             = 0x0073,    //   115
-            Device_DeviceAsyncDummy_Event          = 0x0063,    //    99
+            Device_Stop_Command = 0x8473,
+            Device_Stop_Response = 0x0473,
+            Device_Stop_Async_Response = 0x0073,
+            Device_DeviceAsyncDummy_Event = 0x0063,
             //
-            Device_DeviceGet_Command               = 0x8466,    // 33894
-            Device_DeviceGet_Response              = 0x0466,    //  1126
-            Device_DeviceSet_Command               = 0x84B7,    // 33975
-            Device_DeviceSet_Response              = 0x04B7,    //  1207
+            Device_DeviceGet_Command = 0x8466,
+            Device_DeviceGet_Response = 0x0466,
+            Device_DeviceSet_Command = 0x84B7,
+            Device_DeviceSet_Response = 0x04B7,
             //
-            Device_SetUartMode_Command             = 0x846B,    // 33899
-            Device_SetUartMode_Response            = 0x046B,    //  1131
+            Device_SetUartMode_Command = 0x846B,
+            Device_SetUartMode_Response = 0x046B,
             //
-            Device_NetCfg_Get_Command              = 0x8433,    // 33843
-            Device_NetCfg_Get_Response             = 0x0433,    //  1075
-            Device_NetCfg_Set_Command              = 0x8432,    // 33842
-            Device_NetCfg_Set_Response             = 0x0432,    //  1076
+            Device_NetCfg_Get_Command = 0x8433,
+            Device_NetCfg_Get_Response = 0x0433,
+            Device_NetCfg_Set_Command  = 0x8432,
+            Device_NetCfg_Set_Response = 0x0432,
             //
-            NetApp_DnsGetHostByName_Command        = 0x9C20,    // 39968
-            NetApp_DnsGetHostByName_Response       = 0x1C20,    //  7200
-            NetApp_DnsGetHostByName_AsyncResponse  = 0x1820,    //  6176
-            NetApp_IPv4IPAcquired_Event            = 0x1825,    //  6181
-            NetApp_Stop_Command                    = 0x9C61,    // 39969
-            NetApp_Stop_Response                   = 0x1C61,    //  7265
+            NetApp_DnsGetHostByName_Command = 0x9C20,
+            NetApp_DnsGetHostByName_Response= 0x1C20,
+            NetApp_DnsGetHostByName_AsyncResponse = 0x1820,
+            NetApp_IPv4IPAcquired_Event = 0x1825,
+            NetApp_Stop_Command      = 0x9C61,
+            NetApp_Stop_Response     = 0x1C61,
             //
-            NvMem_FileClose_Command                = 0xA43D,    // 42045
-            NvMem_FileClose_Response               = 0x243D,    //  9277
-            NvMem_FileDel_Command                  = 0xA443,    // 42051
-            NvMem_FileDel_Response                 = 0x2443,    //  9283
-            NvMem_FileOpen_Command                 = 0xA43C,    // 42044
-            NvMem_FileOpen_Response                = 0x243C,    //  9290
-            NvMem_FileRead_Command                 = 0xA440,    // 42048
-            NvMem_FileRead_Response                = 0x2440,    //  9280
-            NvMem_FileWrite_Command                = 0xA441,    // 42049
-            NvMem_FileWrite_Response               = 0x2441,    //  9281
+            NvMem_FileClose_Command  = 0xA43D,
+            NvMem_FileClose_Response = 0x243D,
+            NvMem_FileDel_Command    = 0xA443,
+            NvMem_FileDel_Response   = 0x2443,
+            NvMem_FileOpen_Command   = 0xA43C,
+            NvMem_FileOpen_Response  = 0x243C,
+            NvMem_FileRead_Command   = 0xA440,
+            NvMem_FileRead_Response  = 0x2440,
+            NvMem_FileWrite_Command  = 0xA441,
+            NvMem_FileWrite_Response = 0x2441,
             //
-            Socket_Accept_Command                  = 0x9403,    // 37891
-            Socket_Accept_Response                 = 0x1403,    //  5123
-            Socket_Accept_IPv4_AsyncResponse       = 0x1003,    //  4099
-            Socket_Async_Event                     = 0x100F,    //  4111
-            Socket_Bind_IPv4_Command               = 0x9404,    // 37892
+            Socket_Accept_Command    = 0x9403,
+            Socket_Accept_Response   = 0x1403,
+            Socket_Accept_IPv4_AsyncResponse = 0x1003,
+            Socket_Async_Event       = 0x100F,
+            Socket_Bind_IPv4_Command = 0x9404,
             //Socket_Bind_IPv6_Command   = 0x9604,
-            Socket_Bind_Response                   = 0x1404,    //  5124
-            Socket_Connect_IPv4_Command            = 0x9406,    // 37894
+            Socket_Bind_Response       = 0x1404,
+            Socket_Connect_IPv4_Command= 0x9406,
             //Socket_Connect_IPv6_Command= 0x9606,
-            Socket_Connect_Response                = 0x1406,    //  5126
-            Socket_Connect_AsyncResponse           = 0x1006,    //  5002
-            Socket_Close_Command                   = 0x9402,    // 33890
-            Socket_Close_Response                  = 0x1402,    //  5122
-            Socket_GetSockOpt_Command              = 0x9409,    // 37897
-            Socket_GetSockOpt_Response             = 0x1409,    //  5129
-            Socket_Listen_Command                  = 0x9405,    // 33893
-            Socket_Listen_Response                 = 0x1405,    //  5125
-            Socket_Recv_Command                    = 0x940A,    // 37898
-            Socket_Recv_AsyncResponse              = 0x100A,    //  5006
-            Socket_RecvFrom_Command                = 0x940B,    // 37899
+            Socket_Connect_Response    = 0x1406,
+            Socket_Connect_AsyncResponse=0x1006,
+            Socket_Close_Command       = 0x9402,
+            Socket_Close_Response      = 0x1402,
+            Socket_GetSockOpt_Command  = 0x9409,
+            Socket_GetSockOpt_Response = 0x1409,
+            Socket_Listen_Command      = 0x9405,
+            Socket_Listen_Response     = 0x1405,
+            Socket_Recv_Command        = 0x940A,
+            Socket_Recv_AsyncResponse  = 0x100A,
+            Socket_RecvFrom_Command    = 0x940B,
             Socket_RecvFrom_IPv4_AsyncResponse=0x100B,
             //Socket_RecvFrom_IPv6_AsyncResponse=0x120B,
-            Socket_Select_Command                  = 0x9407,    // 37895
-            Socket_Select_Response                 = 0x1407,    //  5127
-            Socket_Select_AsyncResponse            = 0x1007,    //  5005
-            Socket_Send_Command                    = 0x940C,    // 37900
-            Socket_SendTo_IPv4_Command             = 0x940D,    // 37901
+            Socket_Select_Command      = 0x9407,
+            Socket_Select_Response     = 0x1407,
+            Socket_Select_AsyncResponse= 0x1007,
+            Socket_Send_Command        = 0x940C,
+            Socket_SendTo_IPv4_Command = 0x940D,
             //Socket_SendTo_IPv6_Command = 0x960D,
-            Socket_SetSockOpt_Command              = 0x9408,    // 37896
-            Socket_SetSockOpt_Response             = 0x1408,    //  5128
-            Socket_Socket_Command                  = 0x9401,    // 37889
-            Socket_Socket_Response                 = 0x1401,    //  5121
-            Socket_TxFailed_EVent                  = 0x100E,    //  4110
+            Socket_SetSockOpt_Command  = 0x9408,
+            Socket_SetSockOpt_Response = 0x1408,
+            Socket_Socket_Command      = 0x9401,
+            Socket_Socket_Response     = 0x1401,
+            Socket_TxFailed_EVent      = 0x100E,
             //
-            Wlan_Connect_Event                     = 0x0880,    //  2176
-            Wlan_Disconnect_Event                  = 0x0881,    //  2177
-            Wlan_Policy_Get_Command                = 0x8C87,    // 35975
-            Wlan_Policy_Get_Response               = 0x0C87,    //  3207
-            Wlan_Policy_Set_Command                = 0x8C86,    // 35974
-            Wlan_Policy_Set_Response               = 0x0C86,    //  3206
-            Wlan_Profile_Add_Command               = 0x8C83,    // 35971
-            Wlan_Profile_Add_Response              = 0x0C83,    //  3203
-            Wlan_Profile_Del_Command               = 0x8C85,    // 35973
-            Wlan_Profile_Del_Response              = 0x0C85,    //  3205
-            Wlan_Profile_Get_Command               = 0x8C84,    // 35972
-            Wlan_Profile_Get_Response              = 0x0C84,    //  3204
+            Wlan_Connect_Event         = 0x0880,
+            Wlan_Disconnect_Event      = 0x0881,
+            Wlan_Policy_Get_Command    = 0x8C87,
+            Wlan_Policy_Get_Response   = 0x0C87,
+            Wlan_Policy_Set_Command    = 0x8C86,
+            Wlan_Policy_Set_Response   = 0x0C86,
+            Wlan_Profile_Add_Command   = 0x8C83,
+            Wlan_Profile_Add_Response  = 0x0C83,
+            Wlan_Profile_Del_Command   = 0x8C85,
+            Wlan_Profile_Del_Response  = 0x0C85,
+            Wlan_Profile_Get_Command   = 0x8C84,
+            Wlan_Profile_Get_Response  = 0x0C84,
         }
 
         enum CC3100Role : short 
