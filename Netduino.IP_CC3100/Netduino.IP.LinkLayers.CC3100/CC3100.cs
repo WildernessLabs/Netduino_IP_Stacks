@@ -14,6 +14,9 @@ namespace Netduino.IP.LinkLayers
     {
         ICC3100Transport _cc3100Transport = null;
  
+        /// <summary>
+        ///     CC3100 Socket Information
+        /// </summary>
         public class CC3100SocketInfo
         {
             public UInt32 RemoteIPAddress;
@@ -26,6 +29,12 @@ namespace Netduino.IP.LinkLayers
             public Int32 SocketReceiveBufferFirstAvailableIndex = 0;
             public object SocketReceiveBufferLockObject = new object();
 
+            /// <summary>
+            ///     Constructor for a CC3100SocketInfo object.
+            /// </summary>
+            /// <param name="socketHandle">Handle for the socket.</param>
+            /// <param name="addressFamily">Socket address family (IPV4, IPV6 etc).  Currently only IPV4 is supported.</param>
+            /// <param name="socketType">Socket type (Stream or datagram).</param>
             public CC3100SocketInfo(Int32 socketHandle, SocketAddressFamily addressFamily, SocketSocketType socketType)
             {
                 this.SocketHandle = socketHandle;
@@ -35,6 +44,7 @@ namespace Netduino.IP.LinkLayers
                 this.RemoteIPPort = 0; // default
             }
         }
+
         System.Collections.ArrayList _cc3100SocketList = new System.Collections.ArrayList();
         object _cc3100SocketListLockObject = new object();
 
@@ -64,8 +74,7 @@ namespace Netduino.IP.LinkLayers
         bool _isInitialized = false;
         bool _isSimplelinkStarted = false;
 
-        /* TODO: the CC3100 appears to cycle its syncword's last two bits between data blocks; if so, consider using that as a sequence number if that is a benefit to us,
-         *       for reliability or performance reasons, etc. */
+        /* TODO: the CC3100 appears to cycle its syncword's last two bits between data blocks; if so, consider using that as a sequence number if that is a benefit to us, for reliability or performance reasons, etc. */
         const int SYNC_WORD_SIZE_TX = 4;
 //        const int SYNC_WORD_SIZE_TX = 8;
         //byte[] _syncWordWrite = new byte[SYNC_WORD_SIZE_TX] { 0x43, 0x21, 0x34, 0x12 }; /* use network byte order */
@@ -106,6 +115,9 @@ namespace Netduino.IP.LinkLayers
 
         AutoResetEvent _callFunctionSynchronizationEvent;
 
+        /// <summary>
+        /// 
+        /// </summary>
         class PendingResponse
         {
             public CC3100Opcode OpCode;
@@ -233,6 +245,9 @@ namespace Netduino.IP.LinkLayers
             Wlan_Profile_Get_Response = 0x0C84,    //  3204
         }
 
+        /// <summary>
+        ///     Role of the CC3100 (Access Point - AP, Station -STA etc).
+        /// </summary>
         enum CC3100Role : short 
         {
             ROLE_UNKNOWN_ERR = -1,
@@ -257,6 +272,9 @@ namespace Netduino.IP.LinkLayers
             //SL_SET_HOST_RX_AGGR = 8,
         }
 
+        /// <summary>
+        ///     Type of network application (HTTP Server etc.).
+        /// </summary>
         public enum sl_NetAppOptions : uint 
         {
             HttpServer = 1,
@@ -266,6 +284,9 @@ namespace Netduino.IP.LinkLayers
 //            DeviceConfig = 16,
         }
 
+        /// <summary>
+        ///     SimpleLink file system file access modes.
+        /// </summary>
         public enum _sl_FsMode : byte
         {
             OpenRead = 0,
@@ -286,6 +307,9 @@ namespace Netduino.IP.LinkLayers
             Read = 0x40,
         }
 
+        /// <summary>
+        ///     Wireless LAN security type (WEP etc).
+        /// </summary>
         public enum WlanSecurityType : byte
         {
             Open = 0,
@@ -301,6 +325,12 @@ namespace Netduino.IP.LinkLayers
             //P2pPinAuto = 9, /* not yet supported */
         }
 
+        /// <summary>
+        ///     Socket address family (IPV4 etc.)
+        /// </summary>
+        /// <remarks>
+        ///     Currently only IPV4 is supported by this class.
+        /// </remarks>
         public enum SocketAddressFamily : byte
         {
             IPv4 = 2,
@@ -310,6 +340,9 @@ namespace Netduino.IP.LinkLayers
             //Packet = 17,
         }
 
+        /// <summary>
+        ///     Socket type (Datagram, stream etc.).
+        /// </summary>
         public enum SocketSocketType : byte
         {
             Stream = 1,
@@ -320,6 +353,9 @@ namespace Netduino.IP.LinkLayers
             //RawProtocol = 255,
         }
 
+        /// <summary>
+        ///     Socket protocol (TCP, UDP etc.).
+        /// </summary>
         public enum SocketProtocolType : byte
         {
             //IP = 0,
@@ -338,6 +374,16 @@ namespace Netduino.IP.LinkLayers
         OutputPort _ledLink = null;
         OutputPort _ledState = null;
 
+        #region Constructors
+
+        /// <summary>
+        ///     Create a new instance of the CC3100 class using the SPI interface to connect to the module.
+        /// </summary>
+        /// <param name="spiBusID">SPI bus the CC3100 is connected to.</param>
+        /// <param name="csPinID">Chip select for the SPI bus.</param>
+        /// <param name="intPinID">Interrupt pin for the CC3100 module.</param>
+        /// <param name="resetPinID">Reset pin for the CC3100 module.</param>
+        /// <param name="hibernatePinID">Hibernate pin for the CC3100 module.</param>
         /* TODO: should all of our link layers implement IDisposable, so that we can free up the interrupt, reset and other pins when we're done with the NIC? */
         public CC3100(SPI.SPI_module spiBusID, Cpu.Pin csPinID, Cpu.Pin intPinID, Cpu.Pin resetPinID, Cpu.Pin hibernatePinID)
         {
@@ -361,6 +407,13 @@ namespace Netduino.IP.LinkLayers
             _isInitialized = false;
         }
 
+        /// <summary>
+        ///     Create a new instance of the CC3100 object using the COM port for communications with the CC3100 module.
+        /// </summary>
+        /// <param name="portName">COM port connected to the CC3100 module.</param>
+        /// <param name="intPinID">Interrupt pin for the CC3100 module.</param>
+        /// <param name="resetPinID">Reset pin for the CC3100 module.</param>
+        /// <param name="hibernatePinID">Hibernate pin for the CC3100 module.</param>
         public CC3100(string portName, Cpu.Pin intPinID, Cpu.Pin resetPinID, Cpu.Pin hibernatePinID)
         {
             // initialize variables
@@ -381,6 +434,8 @@ namespace Netduino.IP.LinkLayers
             // we are not initialized; we will initialize when we are started. 
             _isInitialized = false;
         }
+
+        #endregion Constructors
 
         void InitializeVariables()
         {
@@ -584,14 +639,17 @@ namespace Netduino.IP.LinkLayers
         }
 
         #region SimpleLink Error Codes
+
         public enum CC3100ErrorCode : int 
         {
             //SL_POOL_IS_EMPTY = -2000,
             SL_ESMALLBUF     = -2001,
         }
+        
         #endregion /* SimpleLink Error Codes */
 
         #region SimpleLink Device API
+
         void sl_DeviceDisable()
         {
             try { _cc3100Transport.DataReceived -= _cc3100Transport_DataReceived; } catch { }
