@@ -29,6 +29,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CC3100.CC3100SocketInfo.cs" />
+    <Compile Include="CC3100.PendingResponse.cs" />
     <Compile Include="CC3100BitConverter.cs" />
     <Compile Include="CC3100Certificate.cs" />
     <Compile Include="CC3100Exceptions.cs" />
@@ -39,6 +41,7 @@
     <Compile Include="ICC3100Transport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CC3100.cs" />
+    <Compile Include="RoslynHackFix.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Hardware" />

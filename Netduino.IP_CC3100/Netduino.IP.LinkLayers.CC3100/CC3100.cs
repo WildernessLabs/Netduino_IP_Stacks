@@ -1,7 +1,3 @@
-// Netduino.IP Stack
-// Copyright (c) 2015 Secret Labs LLC. All rights reserved.
-// Licensed under the Apache 2.0 License
-
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using System;
@@ -10,62 +6,65 @@ using System.Threading;
 
 namespace Netduino.IP.LinkLayers
 {
-    public class CC3100 : Netduino.IP.ILinkLayer
+    public partial class CC3100 : Netduino.IP.ILinkLayer
     {
         ICC3100Transport _cc3100Transport = null;
  
-        /// <summary>
-        ///     CC3100 Socket Information
-        /// </summary>
-        public class CC3100SocketInfo
-        {
-            public UInt32 RemoteIPAddress;
-            public UInt16 RemoteIPPort;
-            public Int32 SocketHandle;
-            public SocketAddressFamily SocketAddressFamily;
-            public SocketSocketType SocketSocketType;
-            // the following are used to buffer RX data
-            public byte[] SocketReceiveBuffer = null;
-            public Int32 SocketReceiveBufferFirstAvailableIndex = 0;
-            public object SocketReceiveBufferLockObject = new object();
-
-            /// <summary>
-            ///     Constructor for a CC3100SocketInfo object.
-            /// </summary>
-            /// <param name="socketHandle">Handle for the socket.</param>
-            /// <param name="addressFamily">Socket address family (IPV4, IPV6 etc).  Currently only IPV4 is supported.</param>
-            /// <param name="socketType">Socket type (Stream or datagram).</param>
-            public CC3100SocketInfo(Int32 socketHandle, SocketAddressFamily addressFamily, SocketSocketType socketType)
-            {
-                this.SocketHandle = socketHandle;
-                this.SocketAddressFamily = addressFamily;
-                this.SocketSocketType = socketType;
-                this.RemoteIPAddress = 0; // default
-                this.RemoteIPPort = 0; // default
-            }
-        }
-
         System.Collections.ArrayList _cc3100SocketList = new System.Collections.ArrayList();
         object _cc3100SocketListLockObject = new object();
 
+        /// <summary>
+        ///     Indicate the method used to communicate with the CC3100 (UART or SPI).
+        /// </summary>
         enum CC3100TransportTypes
         {
             Spi,
             Uart
         }
+
+        /// <summary>
+        ///     Transport type used to communicate with the CC3100 (default is SPI).
+        /// </summary>
         CC3100TransportTypes _cc3100TransportType = CC3100TransportTypes.Spi;
 
-        // SPI transport settings
+        /// <summary>
+        ///     SPI bus object connected to the CC3100.
+        /// </summary>
         SPI.SPI_module _spiBusID = SPI.SPI_module.SPI1;
+
+        /// <summary>
+        ///     Name of the pin used as the SPI chip select signal for the CC3100.
+        /// </summary>
         Cpu.Pin _spiCsPinID = Cpu.Pin.GPIO_NONE;
+
+        /// <summary>
+        ///     Name of the pin used as an interrupt signal for the CC3100 when SPI is used.
+        /// </summary>
         Cpu.Pin _spiIntPinID = Cpu.Pin.GPIO_NONE;
 
-        // UART transport settings
+        /// <summary>
+        ///     Name of the UART connected to the CC3100.
+        /// </summary>
         string _uartPortName = String.Empty;
 
+        /// <summary>
+        ///     Reset GPIO port used to reset the CC3100.
+        /// </summary>
         OutputPort _resetPin = null;
+
+        /// <summary>
+        ///     GPIO pin name used to reset the CC3100.
+        /// </summary>
         Cpu.Pin _resetPinID = Cpu.Pin.GPIO_NONE;
+
+        /// <summary>
+        ///     Hibernate GPIO object used to put the CC3100 into hibernate mode.
+        /// </summary>
         OutputPort _hibernatePin = null;
+
+        /// <summary>
+        ///     GPIO pin name of the pin used to put the CC3100 into hibernate mode.
+        /// </summary>
         Cpu.Pin _hibernatePinId = Cpu.Pin.GPIO_NONE;
 
         const int MAC_ADDRESS_SIZE = 6;
@@ -115,22 +114,6 @@ namespace Netduino.IP.LinkLayers
 
         AutoResetEvent _callFunctionSynchronizationEvent;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        class PendingResponse
-        {
-            public CC3100Opcode OpCode;
-            public AutoResetEvent WaitHandle = new AutoResetEvent(false);
-            public object ResponseData = null;
-            public Int32 SocketHandle = -1; /* this is used on async responses which are socket-specific; -1 means "do not match socketHandle on response" */
-
-            internal void SetResponse(object responseData)
-            {
-                this.ResponseData = responseData;
-                this.WaitHandle.Set();
-            }
-        }
         PendingResponse[] _pendingResponses = null;
         int _pendingResponsesCount = 0;
         object _pendingResponsesLockObject = null;
