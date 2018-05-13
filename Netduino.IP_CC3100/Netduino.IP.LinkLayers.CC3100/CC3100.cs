@@ -489,8 +489,7 @@ namespace Netduino.IP.LinkLayers
                 /* TODO: if we're already started, configure our link LED */
             }
 
-            if (_ledLink != null)
-                _ledLink.Dispose();
+            _ledLink?.Dispose();
 
             _ledLink = new OutputPort(pinID, _lastLinkState);
         }
@@ -503,8 +502,7 @@ namespace Netduino.IP.LinkLayers
                 /* TODO: if we're already started, configure out link LED */
             }
 
-            if (_ledState != null)
-                _ledState.Dispose();
+            _ledState?.Dispose();
 
             _ledState = new OutputPort(pinID, !_lastLinkState);
         }
@@ -670,10 +668,7 @@ namespace Netduino.IP.LinkLayers
 
             // take our hardware chip out of reset
             _hibernatePin.Write(true);
-            if (_resetPin != null)
-            {
-                _resetPin.Write(true);
-            }
+            _resetPin?.Write(true);
         }
 
         /* NOTE: if millisecondsTimeout is set to Timeout.Infinite, this function will block until a connection is established. */
@@ -726,10 +721,7 @@ namespace Netduino.IP.LinkLayers
 
             // in case are aborting an sl_Start, trigger its "InitComplete" event here.
             PendingResponse initCompleteResponse = RemovePendingResponse(CC3100Opcode.Device_InitComplete);
-            if (initCompleteResponse != null)
-            {
-                initCompleteResponse.SetResponse((UInt32)0 /* ROLE_UNKNOWN_ERR */); 
-            }
+            initCompleteResponse?.SetResponse((UInt32)0 /* ROLE_UNKNOWN_ERR */);
 
             // send stop function
             Int32 retVal = sl_StopDevice(millisecondsTimeout);
@@ -2778,19 +2770,17 @@ namespace Netduino.IP.LinkLayers
                                         case CC3100Opcode.Wlan_Connect_Event:
                                             {
                                                 _lastLinkState = true;
-                                                if (_ledState != null) _ledState.Write(false);
-                                                if (_ledLink != null) _ledLink.Write(true);
-                                                if (OnLinkStateChanged != null)
-                                                    OnLinkStateChanged(this, _lastLinkState);
+                                                _ledState?.Write(false);
+                                                _ledLink?.Write(true);
+                                                OnLinkStateChanged?.Invoke(this, _lastLinkState);
                                             }
                                             break;
                                         case CC3100Opcode.Wlan_Disconnect_Event:
                                             {
                                                 _lastLinkState = false;
-                                                if (_ledLink != null) _ledLink.Write(false);
-                                                if (_ledState != null) _ledState.Write(true);
-                                                if (OnLinkStateChanged != null)
-                                                    OnLinkStateChanged(this, _lastLinkState);
+                                                _ledLink?.Write(false);
+                                                _ledState?.Write(true);
+                                                OnLinkStateChanged?.Invoke(this, _lastLinkState);
                                             }
                                             break;
                                         case CC3100Opcode.NetApp_IPv4IPAcquired_Event:
@@ -2803,8 +2793,7 @@ namespace Netduino.IP.LinkLayers
                                                 //_cachedGatewayAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
                                                 //_cachedDnsAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
 
-                                                if (OnIPv4AddressChanged != null)
-                                                    OnIPv4AddressChanged(this, _cachedIpv4Address);
+                                                OnIPv4AddressChanged?.Invoke(this, _cachedIpv4Address);
                                             }
                                             break;
                                         case CC3100Opcode.Socket_Accept_IPv4_AsyncResponse:
