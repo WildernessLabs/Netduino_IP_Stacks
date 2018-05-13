@@ -514,7 +514,7 @@ namespace Netduino.IP.LinkLayers
         {
             _isInitialized = false;
 
-            // dispose of any pre-existing transport
+            // dispose of any preexisting transport
             if (_cc3100Transport != null)
             {
                 _cc3100Transport.Dispose();
@@ -588,7 +588,7 @@ namespace Netduino.IP.LinkLayers
             //    versionLoop++;
             //}
 
-            // disable our integrated web server, dhcp server (if enabled) and mdns feature
+            // disable our integrated web server, DHCP server (if enabled) and mDNS feature
             sl_NetAppStop(sl_NetAppOptions.HttpServer | sl_NetAppOptions.MDNS | sl_NetAppOptions.DhcpServer);
 
             /* TODO: set our MAC address; if this has changed, we will need to reboot the CC3100 */
@@ -701,7 +701,7 @@ namespace Netduino.IP.LinkLayers
             sl_EnableDevice();
 
             // attempt to connect to network chip for millisecondsTimeout
-            // NOTE: in our initial tests, boot time was consistently ~83ms.  But under debugger controler, when no event has been fired before, up to ~1000ms of additional time may be required.
+            // NOTE: in our initial tests, boot time was consistently ~83ms.  But under debugger controller, when no event has been fired before, up to ~1000ms of additional time may be required.
             //Int64 startTicks = Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks;
             if (!initCompleteResponse.WaitHandle.WaitOne(millisecondsTimeout, false))
             {
@@ -933,7 +933,7 @@ namespace Netduino.IP.LinkLayers
         #endregion /* SimpleLink Device API */
 
         /* TDOO: this function is conceptual and mostly untested. */
-        /* NOTE: baud rate can be up to 711 kbps */
+        /* NOTE: baud rate can be up to 711 KBps */
         public Int16 sl_UartSetMode(Int32 baudRate, bool flowControlEnable)
         {
             //throw new NotImplementedException();
@@ -955,7 +955,7 @@ namespace Netduino.IP.LinkLayers
 
             // no data in the command response
 
-            /* NOTE: only send the "magic word" if the function call suceeded */
+            /* NOTE: only send the "magic word" if the function call succeeded */
             _cc3100Transport.Write(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, 0, 4);
             _cc3100Transport.Write(new byte[] { 0x55, 0xAA, 0x55, 0xAA }, 0, 4);
             
@@ -1366,7 +1366,7 @@ namespace Netduino.IP.LinkLayers
                 // call function
                 byte[] responseBytes = CallFunction(CC3100Opcode.NetApp_DnsGetHostByName_Command, CC3100Opcode.NetApp_DnsGetHostByName_Response, descriptors, payload, Timeout.Infinite);
 
-                // response contains immediate status; async response will contain final status and ip address
+                // response contains immediate status; async response will contain final status and IP address
                 if (responseBytes == null)
                 {
                     status = -1; /* TODO: is there an appropriate error response for "timeout"? */
@@ -1577,7 +1577,7 @@ namespace Netduino.IP.LinkLayers
                             ((UInt32)asyncResponseBytes[index + 1] << 16) +
                             ((UInt32)asyncResponseBytes[index + 2] << 8) +
                             asyncResponseBytes[index + 3]
-                            ); // ip address uses network byte order
+                            ); // IP address uses network byte order
                         index += sizeof(UInt32);
 
                         // add our new socket to our socket list.
@@ -1611,7 +1611,7 @@ namespace Netduino.IP.LinkLayers
             index++;
             descriptors[index] = (byte)((ipPort >> 8) & 0xFF); // port high byte (uses network byte order)
             index++;
-            descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( usesnetwork byte order)
+            descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( uses network byte order)
             index++;
             descriptors[index] = (byte)((ipAddress >> 24) & 0xFF); // IP address high byte (uses network byte order)
             index++;
@@ -1687,7 +1687,7 @@ namespace Netduino.IP.LinkLayers
             index++;
             descriptors[index] = (byte)((ipPort >> 8) & 0xFF); // port high byte (uses network byte order)
             index++;
-            descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( usesnetwork byte order)
+            descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( uses network byte order)
             index++;
             //Array.Copy(CC3100BitConverter.GetBytes(paddingOrAddr), 0, descriptors, index, sizeof(UInt16));
             index += sizeof(UInt16);
@@ -1730,7 +1730,7 @@ namespace Netduino.IP.LinkLayers
                 index = 0;
                 status = CC3100BitConverter.ToInt16(asyncResponseBytes, index);
 
-                // update our socket list to show our remote ip address/port
+                // update our socket list to show our remote IP address/port
                 lock (_cc3100SocketListLockObject)
                 {
                     for (int iSocketInfo = 0; iSocketInfo < _cc3100SocketList.Count; iSocketInfo++)
@@ -2008,7 +2008,7 @@ namespace Netduino.IP.LinkLayers
                     index = 0;
                     status = CC3100BitConverter.ToInt16(asyncResponseBytes, index);
 
-                    /* TODO: sometimes we are getting shortened 4-byte reponses instead of all 8 bytes; investigate. */
+                    /* TODO: sometimes we are getting shortened 4-byte responses instead of all 8 bytes; investigate. */
                     if (status >= 0 && asyncResponseBytes.Length >= 8)
                     {
                         index += sizeof(Int16);
@@ -2131,7 +2131,7 @@ namespace Netduino.IP.LinkLayers
                 index++;
                 descriptors[index] = (byte)((ipPort >> 8) & 0xFF); // port high byte (uses network byte order)
                 index++;
-                descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( usesnetwork byte order)
+                descriptors[index] = (byte)(ipPort & 0xFF); // port low byte ( uses network byte order)
                 index++;
                 //Array.Copy(CC3100BitConverter.GetBytes(paddingOrAddr), 0, descriptors, index, sizeof(UInt16));
                 index += sizeof(UInt16);
@@ -2401,7 +2401,7 @@ namespace Netduino.IP.LinkLayers
             return status;
         }
 
-        //bool SL_WlanProfileAdd(string ssid, byte[] bssid, SL_SecParams secParams, SL_SecParamsExt extSecParmas, UInt32 priority, UInt32 options)
+        //bool SL_WlanProfileAdd(string SSID, byte[] BSSID, SL_SecParams secParams, SL_SecParamsExt extSecParmas, UInt32 priority, UInt32 options)
         public Int32 sl_WlanProfileAdd(string ssid, byte[] bssid, WlanSecurityType securityType, string securityKey, object unimplementedEnterpriseSecurityParams, byte priority)
         {
             Int32 index = 0;
@@ -2583,7 +2583,7 @@ namespace Netduino.IP.LinkLayers
         /* NOTE: millisecondsTimeout only applies to the command response; our function call waits indefinitely for previous commands to complete before its own execution */
         byte[] CallFunction(CC3100Opcode functionOpCode, CC3100Opcode responseOpCode, byte[] descriptors, byte[] payload, Int32 millisecondsTimeout)
         {
-            // if we are using SPI transport, wait at least 10 ms after init is complete before proceeding (so that SPI can stabilize before we start issuing commands */
+            // if we are using SPI transport, wait at least 10 ms after initialisation is complete before proceeding (so that SPI can stabilize before we start issuing commands */
             if (!_isFirstCommandSent && _cc3100TransportType == CC3100TransportTypes.Spi)
             {
                 ((CC3100SpiTransport)_cc3100Transport).SetIsFirstReadCommandAfterInit();
@@ -3222,7 +3222,7 @@ namespace Netduino.IP.LinkLayers
             Debug.Print("");
             /* GET VERSION FINISH */
 
-            //Debug.Print("Deleting all Wi-Fi associations.");
+            //Debug.Print("Deleting all WiFi associations.");
             //sl_WlanProfileDel(0xFF);
             //sl_WlanPolicySet(0x10 /* SL_POLICY_CONNECTION */, 0x00, null);
             //sl_Stop(1000);
@@ -3269,7 +3269,7 @@ namespace Netduino.IP.LinkLayers
             } while (chunkLen > 0);
 
 
-            /* close the servicepack file */
+            /* close the service pack file */
             Debug.Print("Closing service pack file.");
             retVal = sl_FsClose(servicePackFileHandle, "", CC3100ServicePack.ServicePackImageSig);
             if (retVal < 0)
