@@ -1873,7 +1873,9 @@ namespace Netduino.IP.LinkLayers
         public Int32 sl_RecvFrom(Int32 socketHandle, byte[] buffer, Int32 offset, Int32 count, Int16 flags, SocketAddressFamily addressFamily, out UInt32 ipAddress, out UInt16 ipPort)
         {
             if (offset + count > buffer.Length)
+            {
                 throw new ArgumentException();
+            }
 
             Int32 index = 0;
             Int32 statusOrLen = 0;
@@ -1962,7 +1964,9 @@ namespace Netduino.IP.LinkLayers
                     for (int i = 0; i < readSocketHandles.Length; i++)
                     {
                         if ((readSocketHandles[i] & 0x0F) > highestSocketHandlePlusOne)
+                        {
                             highestSocketHandlePlusOne = (readSocketHandles[i] & 0x0F) + 1;
+                        }
                         // add the readSocketHandle to our bitmask
                         readSocketMask |= (UInt16)(1 << (readSocketHandles[i] & 0x0F));
                     }
@@ -1972,7 +1976,10 @@ namespace Netduino.IP.LinkLayers
                     for (int i = 0; i < writeSocketHandles.Length; i++)
                     {
                         if ((writeSocketHandles[i] & 0x0F) > highestSocketHandlePlusOne)
+                        {
                             highestSocketHandlePlusOne = (writeSocketHandles[i] & 0x0F) + 1;
+                        }
+
                         // add the readSocketHandle to our bitmask
                         writeSocketMask |= (UInt16)(1 << (writeSocketHandles[i] & 0x0F));
                     }
