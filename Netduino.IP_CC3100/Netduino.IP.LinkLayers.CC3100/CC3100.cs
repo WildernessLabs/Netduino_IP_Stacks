@@ -633,7 +633,14 @@ namespace Netduino.IP.LinkLayers
 
         void sl_DeviceDisable()
         {
-            try { _cc3100Transport.DataReceived -= _cc3100Transport_DataReceived; } catch { }
+            try
+            {
+                _cc3100Transport.DataReceived -= _cc3100Transport_DataReceived;
+            }
+            catch
+            {
+                // ignored
+            }
 
             // hardware-reset our network chip
             if (_resetPinID != Cpu.Pin.GPIO_NONE)
@@ -841,14 +848,14 @@ namespace Netduino.IP.LinkLayers
             byte[] descriptors = new byte[8];
             index = 0;
             // skip the 16-bit status
-                Array.Copy(CC3100BitConverter.GetBytes((UInt16)0xCCCC), 0, descriptors, index, sizeof(UInt16));
+            Array.Copy(CC3100BitConverter.GetBytes((UInt16)0xCCCC), 0, descriptors, index, sizeof(UInt16));
             index += sizeof(UInt16);
             Array.Copy(CC3100BitConverter.GetBytes((UInt16)deviceGetId), 0, descriptors, index, sizeof(UInt16));
             index += sizeof(UInt16);
             Array.Copy(CC3100BitConverter.GetBytes((UInt16)option), 0, descriptors, index, sizeof(UInt16));
             index += sizeof(UInt16);
             // skip the 16-bit configLen
-                Array.Copy(CC3100BitConverter.GetBytes((UInt16)0xCCCC), 0, descriptors, index, sizeof(UInt16));
+            Array.Copy(CC3100BitConverter.GetBytes((UInt16)0xCCCC), 0, descriptors, index, sizeof(UInt16));
             index += sizeof(UInt16);
 
             // payload (32-bit aligned)
@@ -877,8 +884,9 @@ namespace Netduino.IP.LinkLayers
             if (status == 0) // success
             {
                 if (responseBytes.Length - index > values.Length)
-                    return (Int32)CC3100ErrorCode.SL_ESMALLBUF;
-
+                {
+                    return (Int32) CC3100ErrorCode.SL_ESMALLBUF;
+                }
                 Array.Copy(responseBytes, index, values, 0, responseBytes.Length - index);
             }
             return status;
@@ -1067,13 +1075,16 @@ namespace Netduino.IP.LinkLayers
             for (index = 0; index < granOptions.Length; index++)
             {
                 if (granOptions[index] * 255 >= maxSizeInBytes)
+                {
                     break;
+                }
             }
             byte granNum = (byte)(maxSizeInBytes / granOptions[index]);
             // if maxSize requires an extra partial gran, add one more now.
             if (maxSizeInBytes % granOptions[index] != 0)
+            {
                 granNum++;
-
+            }
             return _sl_GetFsMode(_sl_FsMode.OpenWriteCreateIfNotExist, (byte)index, granNum, (byte)accessFlags);
         }
 
@@ -1118,8 +1129,9 @@ namespace Netduino.IP.LinkLayers
             byte[] responseBytes = CallFunction(CC3100Opcode.NvMem_FileClose_Command, CC3100Opcode.NvMem_FileClose_Response, descriptors, payload, Timeout.Infinite);
 
             if (responseBytes == null)
+            {
                 return -1;
-
+            }
             // response contains status
             index = 0;
             return (Int32)CC3100BitConverter.ToInt16(responseBytes, index); // statusOrLen
@@ -1144,8 +1156,9 @@ namespace Netduino.IP.LinkLayers
             byte[] responseBytes = CallFunction(CC3100Opcode.NvMem_FileDel_Command, CC3100Opcode.NvMem_FileDel_Response, descriptors, payload, Timeout.Infinite);
 
             if (responseBytes == null)
+            {
                 return -1;
-
+            }
             // response contains status
             index = 0;
             return (Int32)CC3100BitConverter.ToInt16(responseBytes, index); // statusOrLen
@@ -1206,9 +1219,13 @@ namespace Netduino.IP.LinkLayers
             while (bufferIndex < buffer.Length)
             {
                 if (buffer.Length - bufferIndex < maxChunkLen)
+                {
                     chunkLen = buffer.Length - bufferIndex;
+                }
                 else
+                {
                     chunkLen = maxChunkLen;
+                }
 
                 // descriptors (32-bit aligned)
                 byte[] descriptors = new byte[12];
@@ -1241,9 +1258,13 @@ namespace Netduino.IP.LinkLayers
                 if (statusOrLen < 0)
                 {
                     if (bytesRead > 0)
+                    {
                         return bytesRead;
+                    }
                     else
+                    {
                         return statusOrLen;
+                    }
                 }
 
                 responseIndex += sizeof(Int16);
@@ -1274,9 +1295,13 @@ namespace Netduino.IP.LinkLayers
             while (bufferIndex < buffer.Length)
             {
                 if (buffer.Length - bufferIndex < maxChunkLen)
+                {
                     chunkLen = buffer.Length - bufferIndex;
+                }
                 else
+                {
                     chunkLen = maxChunkLen;
+                }
 
                 // descriptors (32-bit aligned)
                 byte[] descriptors = new byte[12];
@@ -1311,9 +1336,13 @@ namespace Netduino.IP.LinkLayers
                 if (statusOrLen < 0)
                 {
                     if (bytesWritten > 0)
+                    {
                         return bytesWritten;
+                    }
                     else
+                    {
                         return statusOrLen;
+                    }
                 }
 
                 bytesWritten += statusOrLen;
@@ -1390,9 +1419,13 @@ namespace Netduino.IP.LinkLayers
                         case -161: // SL_NET_APP_DNS_NO_SERVER /* /* No DNS server was specified */
                             {
                                 if (!_lastLinkState)
+                                {
                                     throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.NetworkDown);
+                                }
                                 else
+                                {
                                     throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.HostNotFound);
+                                }
                             }
                         default:
                             throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.HostNotFound);
@@ -1620,7 +1653,9 @@ namespace Netduino.IP.LinkLayers
             byte[] responseBytes = CallFunction(CC3100Opcode.Socket_Bind_IPv4_Command, CC3100Opcode.Socket_Bind_Response, descriptors, null, Timeout.Infinite);
 
             if (responseBytes == null)
+            {
                 return -1;
+            }
 
             // response contains status
             index = 0;
@@ -2331,7 +2366,9 @@ namespace Netduino.IP.LinkLayers
                 index++;
 
                 if (policyLength > values.Length)
-                    return (Int32)CC3100ErrorCode.SL_ESMALLBUF;
+                {
+                    return (Int32) CC3100ErrorCode.SL_ESMALLBUF;
+                }
 
                 if (policyLength > 0)
                 {
@@ -2340,7 +2377,9 @@ namespace Netduino.IP.LinkLayers
                 else
                 {
                     if (values.Length < 1)
-                        return (Int32)CC3100ErrorCode.SL_ESMALLBUF;
+                    {
+                        return (Int32) CC3100ErrorCode.SL_ESMALLBUF;
+                    }
 
                     values[0] = responsePolicy;
                 }
@@ -2582,7 +2621,10 @@ namespace Netduino.IP.LinkLayers
                 _isFirstCommandSent = true;
             }
 
-            if (!_isSimplelinkStarted) return null; /* TODO: return "SimpleLink not started" or other fatal error */
+            if (!_isSimplelinkStarted)
+            {
+                return null; /* TODO: return "SimpleLink not started" or other fatal error */
+            }
 
             // NOTE: we make sure that only one function call can be outstanding simultaneously
             AutoResetEvent synchronizationLockEvent = _callFunctionSynchronizationEvent; // make a local copy, in case sl_Stop/sl_Start is called during function call.
@@ -2911,7 +2953,10 @@ namespace Netduino.IP.LinkLayers
                 /* ERRATA fix: retry sl_NetCfgGet up to 3 times, 100ms apart, to work around an unknown CC3100 error code (-21991) */
                 Int32 retVal = sl_NetCfgGet(SL_NetCfg_ConfigID.SL_IPV4_STA_P2P_CL_GET_INFO, ref dhcpIsOn, values);
                 if (retVal < 0)
-                    throw new CC3100SimpleLinkException(retVal); /* TODO: determine best exception to use for "could not communicate with CC3100 module" */
+                {
+                    throw
+                        new CC3100SimpleLinkException(retVal);  /* TODO: determine best exception to use for "could not communicate with CC3100 module" */
+                }
 
                 // parse response
                 lock (_cachedIpv4ConfigurationLockObject)
@@ -2999,6 +3044,7 @@ namespace Netduino.IP.LinkLayers
             {
                 // Parse to '.' or end of IP address
                 if (ipAddress[i] == '.' || i == length - 1)
+                {
                     // If the IP starts with a '.'
                     // or a segment is longer than 3 characters or shiftIndex > last bit position throw.
                     if (i == 0 || i - lastIndex > 3 || shiftIndex > 24)
@@ -3008,12 +3054,13 @@ namespace Netduino.IP.LinkLayers
                     else
                     {
                         i = i == length - 1 ? ++i : i;
-                        octet = (ulong)(ConvertStringToInt32(ipAddress.Substring(lastIndex, i - lastIndex)) & 0x00000000000000FF);
-                        ipAddressValue = ipAddressValue + (ulong)((octet << shiftIndex) & mask);
+                        octet = (ulong) (ConvertStringToInt32(ipAddress.Substring(lastIndex, i - lastIndex)) & 0x00000000000000FF);
+                        ipAddressValue = ipAddressValue + (ulong) ((octet << shiftIndex) & mask);
                         lastIndex = i + 1;
                         shiftIndex = shiftIndex - 8;
                         mask = (mask >> 8);
                     }
+                }
             }
 
             return (uint)ipAddressValue;
@@ -3136,11 +3183,17 @@ namespace Netduino.IP.LinkLayers
 			// put the chip into hibernate mode
 			_hibernatePin.Write(false);
 
-            try { _ledLink.Write(false); } 
+            try
+            {
+                _ledLink.Write(false); 
+            } 
             catch { }
             finally { /*_ledLink.Dispose();*/ }
 
-            try { _ledState.Write(false); }
+            try
+            {
+                _ledState.Write(false);
+            }
             catch { }
             finally { /*_ledState.Dispose();*/ }
         }
