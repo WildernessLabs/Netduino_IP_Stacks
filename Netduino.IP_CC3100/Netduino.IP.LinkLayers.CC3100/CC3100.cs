@@ -1411,21 +1411,17 @@ namespace Netduino.IP.LinkLayers
                     switch (status)
                     {
                         case 0: // success
-                            {
-                                index += 4;
-                                ipAddress = CC3100BitConverter.ToUInt32(asyncResponseBytes, index);
-                            }
+                            index += 4;
+                            ipAddress = CC3100BitConverter.ToUInt32(asyncResponseBytes, index);
                             break;
                         case -161: // SL_NET_APP_DNS_NO_SERVER /* /* No DNS server was specified */
+                            if (!_lastLinkState)
                             {
-                                if (!_lastLinkState)
-                                {
-                                    throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.NetworkDown);
-                                }
-                                else
-                                {
-                                    throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.HostNotFound);
-                                }
+                                throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.NetworkDown);
+                            }
+                            else
+                            {
+                                throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.HostNotFound);
                             }
                         default:
                             throw new System.Net.Sockets.SocketException(System.Net.Sockets.SocketError.HostNotFound);
@@ -2810,33 +2806,27 @@ namespace Netduino.IP.LinkLayers
                                     switch (opCode)
                                     {
                                         case CC3100Opcode.Wlan_Connect_Event:
-                                            {
-                                                _lastLinkState = true;
-                                                _ledState?.Write(false);
-                                                _ledLink?.Write(true);
-                                                OnLinkStateChanged?.Invoke(this, _lastLinkState);
-                                            }
+                                            _lastLinkState = true;
+                                            _ledState?.Write(false);
+                                            _ledLink?.Write(true);
+                                            OnLinkStateChanged?.Invoke(this, _lastLinkState);
                                             break;
                                         case CC3100Opcode.Wlan_Disconnect_Event:
-                                            {
-                                                _lastLinkState = false;
-                                                _ledLink?.Write(false);
-                                                _ledState?.Write(true);
-                                                OnLinkStateChanged?.Invoke(this, _lastLinkState);
-                                            }
+                                            _lastLinkState = false;
+                                            _ledLink?.Write(false);
+                                            _ledState?.Write(true);
+                                            OnLinkStateChanged?.Invoke(this, _lastLinkState);
                                             break;
                                         case CC3100Opcode.NetApp_IPv4IPAcquired_Event:
+                                            lock (_cachedIpv4ConfigurationLockObject)
                                             {
-                                                lock (_cachedIpv4ConfigurationLockObject)
-                                                {
-                                                    _cachedIpv4Address = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
-                                                    __cachedIpv4ConfigurationIsDirty = true;
-                                                }
-                                                //_cachedGatewayAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
-                                                //_cachedDnsAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
-
-                                                OnIPv4AddressChanged?.Invoke(this, _cachedIpv4Address);
+                                                _cachedIpv4Address = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
+                                                __cachedIpv4ConfigurationIsDirty = true;
                                             }
+                                            //_cachedGatewayAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
+                                            //_cachedDnsAddress = CC3100BitConverter.ToUInt32(_incomingDataBuffer, index);
+
+                                            OnIPv4AddressChanged?.Invoke(this, _cachedIpv4Address);
                                             break;
                                         case CC3100Opcode.Socket_Accept_IPv4_AsyncResponse:
                                         case CC3100Opcode.Socket_Connect_AsyncResponse:
@@ -2954,8 +2944,7 @@ namespace Netduino.IP.LinkLayers
                 Int32 retVal = sl_NetCfgGet(SL_NetCfg_ConfigID.SL_IPV4_STA_P2P_CL_GET_INFO, ref dhcpIsOn, values);
                 if (retVal < 0)
                 {
-                    throw
-                        new CC3100SimpleLinkException(retVal);  /* TODO: determine best exception to use for "could not communicate with CC3100 module" */
+                    throw new CC3100SimpleLinkException(retVal);  /* TODO: determine best exception to use for "could not communicate with CC3100 module" */
                 }
 
                 // parse response
@@ -3031,7 +3020,9 @@ namespace Netduino.IP.LinkLayers
         public uint IPAddressFromStringBE(string ipAddress)
         {
             if (ipAddress == null)
+            {
                 throw new ArgumentNullException();
+            }
 
             ulong ipAddressValue = 0;
             int lastIndex = 0;
@@ -3156,18 +3147,14 @@ namespace Netduino.IP.LinkLayers
             switch (opCode)
             {
                 case CC3100Opcode.Device_InitComplete:
+                    if (length >= 4)
                     {
-                        if (length >= 4)
-                        {
-                            response.ResponseData = CC3100BitConverter.ToUInt32(buffer, offset);
-                        }
+                        response.ResponseData = CC3100BitConverter.ToUInt32(buffer, offset);
                     }
                     break;
                 default:
-                    {
-                        response.ResponseData = new byte[length];
-                        Array.Copy(buffer, offset, (byte[])response.ResponseData, 0, length);
-                    }
+                    response.ResponseData = new byte[length];
+                    Array.Copy(buffer, offset, (byte[])response.ResponseData, 0, length);
                     break;
             }
 
