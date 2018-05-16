@@ -572,8 +572,8 @@ namespace Netduino.IP.LinkLayers
                 Initialize();
             }
 
-            UInt32 ipAddress;
-            UInt16 ipPort;
+            UInt32 ipAddress = 0;
+            UInt16 ipPort = 0;
             Int32 bytesRead = 0;
 
             if (address == null || address.Length < 8)
@@ -591,8 +591,10 @@ namespace Netduino.IP.LinkLayers
             {
                 throw new ArgumentOutOfRangeException(nameof(timeout_ms));
             }
-
-            /* if data is buffered locally, use the local buffer; if not, then read from the CC3100's buffers */
+            //
+            //  If data is buffered locally, use the local buffer; if not, then read from the CC3100's buffers.
+            //
+            bool useCC3100Data = true;
             CC3100.CC3100SocketInfo socketInfo = _cc3100.GetSocketInfo(handle);
             lock (socketInfo.SocketReceiveBufferLockObject)
             {
@@ -605,14 +607,16 @@ namespace Netduino.IP.LinkLayers
                     socketInfo.SocketReceiveBufferFirstAvailableIndex -= bytesRead;
                     ipAddress = socketInfo.RemoteIPAddress;
                     ipPort = socketInfo.RemoteIPPort;
+                    useCC3100Data = false;
                 }
-                else
+            }
+
+            if (useCC3100Data)
+            {
+                bytesRead = _cc3100.sl_RecvFrom(handle, buf, offset, count, 0, Netduino.IP.LinkLayers.CC3100.SocketAddressFamily.IPv4, out ipAddress, out ipPort);
+                if (bytesRead < 0)
                 {
-                    bytesRead = _cc3100.sl_RecvFrom(handle, buf, offset, count, 0, Netduino.IP.LinkLayers.CC3100.SocketAddressFamily.IPv4, out ipAddress, out ipPort);
-                    if (bytesRead < 0)
-                    {
-                        throw new CC3100SimpleLinkException(bytesRead); /* TODO: determine the best exception, based on retVal */
-                    }
+                    throw new CC3100SimpleLinkException(bytesRead); /* TODO: determine the best exception, based on retVal */
                 }
             }
 
