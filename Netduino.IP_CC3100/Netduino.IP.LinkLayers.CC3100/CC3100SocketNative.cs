@@ -567,25 +567,53 @@ namespace Netduino.IP.LinkLayers
 
         public static int recvfrom(int handle, byte[] buf, int offset, int count, int flags, int timeout_ms, ref byte[] address)
         {
-            if (!_isInitialized) Initialize();
+            if (!_isInitialized)
+            {
+                Initialize();
+            }
 
             UInt32 ipAddress;
             UInt16 ipPort;
+            Int32 bytesRead = 0;
 
             if (address == null || address.Length < 8)
-                throw new ArgumentException("address");
+            {
+                throw new ArgumentException(nameof(address));
+            }
 
             /* TODO: enable flags */
             if (flags != 0)
-                throw new ArgumentException("flags");
+            {
+                throw new ArgumentException(nameof(flags));
+            }
             /* TODO: enable send timeout */
             if (timeout_ms != System.Threading.Timeout.Infinite)
-                throw new ArgumentOutOfRangeException("timeout_ms");
-
-            Int32 retVal = _cc3100.sl_RecvFrom(handle, buf, offset, count, 0, Netduino.IP.LinkLayers.CC3100.SocketAddressFamily.IPv4, out ipAddress, out ipPort);
-            if (retVal < 0)
             {
-                throw new CC3100SimpleLinkException(retVal); /* TODO: determine the best exception, based on retVal */
+                throw new ArgumentOutOfRangeException(nameof(timeout_ms));
+            }
+
+            /* if data is buffered locally, use the local buffer; if not, then read from the CC3100's buffers */
+            CC3100.CC3100SocketInfo socketInfo = _cc3100.GetSocketInfo(handle);
+            lock (socketInfo.SocketReceiveBufferLockObject)
+            {
+                if (socketInfo.SocketReceiveBuffer != null && socketInfo.SocketReceiveBufferFirstAvailableIndex > 0)
+                {
+                    bytesRead = System.Math.Min(count, socketInfo.SocketReceiveBufferFirstAvailableIndex);
+                    Array.Copy(socketInfo.SocketReceiveBuffer, 0, buf, offset, bytesRead);
+                    Array.Copy(socketInfo.SocketReceiveBuffer, bytesRead,
+                        socketInfo.SocketReceiveBuffer, 0, socketInfo.SocketReceiveBufferFirstAvailableIndex - bytesRead);
+                    socketInfo.SocketReceiveBufferFirstAvailableIndex -= bytesRead;
+                    ipAddress = socketInfo.RemoteIPAddress;
+                    ipPort = socketInfo.RemoteIPPort;
+                }
+                else
+                {
+                    bytesRead = _cc3100.sl_RecvFrom(handle, buf, offset, count, 0, Netduino.IP.LinkLayers.CC3100.SocketAddressFamily.IPv4, out ipAddress, out ipPort);
+                    if (bytesRead < 0)
+                    {
+                        throw new CC3100SimpleLinkException(bytesRead); /* TODO: determine the best exception, based on retVal */
+                    }
+                }
             }
 
             address[2] = (byte)((ipPort >> 8) & 0xFF);
@@ -595,7 +623,7 @@ namespace Netduino.IP.LinkLayers
             address[6] = (byte)((ipAddress >> 8) & 0xFF);
             address[7] = (byte)(ipAddress & 0xFF);
 
-            return retVal; // positive value indicates # of bytes received
+            return bytesRead; // positive value indicates # of bytes received
         }
 
         public static object[] getpeername_reflection(int handle)
