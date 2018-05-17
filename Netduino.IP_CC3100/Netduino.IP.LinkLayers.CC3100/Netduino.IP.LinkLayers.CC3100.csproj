@@ -49,13 +49,13 @@
     <Reference Include="Microsoft.SPOT.Native" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Netduino.IP\Netduino.IP\Netduino.IP.csproj">
-      <Project>{85B41EDD-37EC-42EB-8187-C01866C18ACC}</Project>
-      <Name>Netduino.IP</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Netduino.IP.Interop\Netduino.IP.Interop.csproj">
       <Project>{85567436-590D-4EE4-8FC3-F058E2E3CCD6}</Project>
       <Name>Netduino.IP.Interop</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Netduino.IP\Netduino.IP.csproj">
+      <Project>{85B41EDD-37EC-42EB-8187-C01866C18ACC}</Project>
+      <Name>Netduino.IP</Name>
     </ProjectReference>
     <ProjectReference Include="..\System\System.csproj">
       <Project>{B9C95976-997C-4933-BC3A-8711CA452987}</Project>

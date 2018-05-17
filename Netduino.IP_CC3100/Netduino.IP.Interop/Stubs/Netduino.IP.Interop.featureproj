@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <FeatureName>Netduino.IP.Interop</FeatureName>
-    <Guid>{068a7091-8676-437f-873d-de6cb8e3ef11}</Guid>
+    <Guid>{e05f737f-7e49-4de8-b2be-7b66d5967d04}</Guid>
     <Description>&lt;Add Feature Description Here&gt;</Description>
     <Groups />
     <NETDUINO_IP_INTEROP_FEATUREPROJ>True</NETDUINO_IP_INTEROP_FEATUREPROJ>
