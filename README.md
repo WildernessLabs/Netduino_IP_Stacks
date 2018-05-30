@@ -24,7 +24,7 @@ One of the advantages of the Netduino.IP is the fact that it is written in C# an
 
 ## Building a Release
 
-Once debugged, any changes to the Netduino.IP code can be [built into the firmware](BuildingForFirmware.md) and deployed to the board.  More information about building the firmware can be found in the [Netduino_SDK github repository](https://github.com/WildernessLabs/Netduino_SDK).
+Once debugged, any changes to the Netduino.IP code can be [built into the firmware](Documentation/BuildingForFirmware) and deployed to the board.  More information about building the firmware can be found in the [Netduino_SDK github repository](https://github.com/WildernessLabs/Netduino_SDK).
 
 ## License
 
