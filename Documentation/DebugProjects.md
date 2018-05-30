@@ -47,3 +47,11 @@ For the Netduino 3 WiFi the references required are as follows:
 | Netduino.IP                   | Netduino.IP.Interop                          |
 | Netduino.IP.LinkLayers.CC3100 | Netduino.IP<br>Netduino.IP.Interop           |
 | Netduino.IP.Interop           | None required                                |
+
+The references added should be from the _Projects_ tab of the _Add References_ dialog box when viewed from your project.
+
+![Add Project References for Netduino IP](AddNetduinoIPReferecnes.png)
+
+## Compiling Your Application
+
+You should now be ready to compile your application, set break points, single step all from within Visual Studio.
