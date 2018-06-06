@@ -22,6 +22,8 @@ Netduino.IP_CC3100 contains the Netduino.IP stack for the CC3100 chip as found o
 
 One of the advantages of the Netduino.IP is the fact that it is written in C# and can be [debugged from within Visual Studio](Documentation/DebugProjects.md).
 
+Debugging the managed network requires a special version of the firmware to be deployed to the Netduino board in question.  Build instructions can be found in the [Netduino_SDK repository](https://github.com/WildernessLabs/Netduino_SDK/tree/master/HowToDocs/BuildForNetworkDebugging).
+
 ## Building a Release
 
 Once debugged, any changes to the Netduino.IP code can be [built into the firmware](Documentation/BuildingForFirmware) and deployed to the board.  More information about building the firmware can be found in the [Netduino_SDK github repository](https://github.com/WildernessLabs/Netduino_SDK).
